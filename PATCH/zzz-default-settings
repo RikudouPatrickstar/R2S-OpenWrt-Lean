@@ -1,0 +1,72 @@
+#!/bin/sh
+
+# System Info
+uci set system.@system[0].timezone=CST-8
+uci set system.@system[0].zonename=Asia/Shanghai
+uci set system.@system[0].hostname='NanoPi-R2S'
+uci commit system
+
+# OpenClash
+uci set openclash.config.core_version='linux-armv8'
+#uci set openclash.config.en_mode='fake-ip'
+#uci set openclash.config.operation_mode='fake-ip'
+uci set openclash.config.log_level='info'
+uci commit openclash
+
+# Samba4
+uci set samba4.@samba[0].interface='lan'
+uci set samba4.@samba[0].macos='1'
+uci set samba4.@samba[0].allow_legacy_protocols='1'
+
+# Feeds
+sed -i 's,downloads.openwrt.org,mirror.sjtu.edu.cn/openwrt,g' /etc/opkg/distfeeds.conf
+
+# Dropbear
+dropbear.@dropbear[0].Interface='lan'
+
+# uHTTPd
+uci set uhttpd.main.rfc1918_filter=0
+uci set uhttpd.main.redirect_https=0
+uci commit uhttpd
+/etc/init.d/uhttpd restart
+
+# Close IPv6
+uci delete network.lan.ip6assign
+uci delete network.wan6
+uci delete dhcp.lan.ra
+uci delete dhcp.lan.dhcpv6
+uci delete dhcp.lan.ndp
+uci commit dhcp
+
+# Packet Steering & Set Lan MTU
+uci set network.globals.packet_steering=1
+uci set network.lan.mtu='1492'
+uci commit network
+/etc/init.d/network restart
+
+# Firewall
+uci set firewall.@defaults[0].fullcone='1'
+uci commit firewall
+
+# SSL
+sed -i 's,#devcrypto,devcrypto,g' /etc/ssl/openssl.cnf
+sed -i 's,#USE_SOFTDRIVERS = 2,USE_SOFTDRIVERS = 1,g' /etc/ssl/openssl.cnf
+
+# Dnsmasq
+sed -i '/log-facility/d' /etc/dnsmasq.conf
+echo "log-facility=/dev/null" >> /etc/dnsmasq.conf
+
+# Others
+ln -sf /sbin/ip /usr/bin/ip
+ln -sf /usr/bin/wget /usr/bin/wget-ssl
+ln -sf /usr/bin/vim /usr/bin/vi
+opkg flag hold luci-app-firewall
+opkg flag hold firewall
+opkg flag hold dnsmasq-full
+#sync; echo 3 > /proc/sys/vm/drop_caches
+
+# Flush LuCI cache
+rm -rf /tmp/luci-modulecache
+rm -f /tmp/luci-indexcache
+
+exit 0
