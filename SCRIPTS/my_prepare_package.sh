@@ -46,7 +46,7 @@ pushd package/lean/luci-app-ssr-plus
   sed -i 's/ShadowSocksR Plus+ Settings/Basic Settings/' po/zh-cn/ssr-plus.po
   sed -i 's/ShadowSocksR Plus+ 设置/基本设置/' po/zh-cn/ssr-plus.po
   sed -i '/Customize Netflix IP Url/d' po/zh-cn/ssr-plus.po
-  sed -i '/自定义Netflix IP更新URL（默认项目地址：https://github.com/QiuSimons/Netflix_IP）/d' po/zh-cn/ssr-plus.po
+  sed -i '/自定义Netflix IP更新URL（默认项目地址：/d' po/zh-cn/ssr-plus.po
   sed -i '/<h3>Support SS/d' po/zh-cn/ssr-plus.po
   sed -i '/<h3>支持 SS/d' po/zh-cn/ssr-plus.po
   ## 修改部分内容
